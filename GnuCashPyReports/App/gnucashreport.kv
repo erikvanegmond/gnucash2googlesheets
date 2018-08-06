@@ -1,0 +1,281 @@
+#:kivy 1.1.0
+#:import lv kivy.uix.listview
+#:import la kivy.adapters.listadapter
+
+
+<Manager>:
+    id: screen_manager
+
+    main_screen: main_screen
+
+    MainScreen:
+        id: main_screen
+        name: 'main_screen'
+        manager: screen_manager
+
+<Popup>:
+    title: "Select File"
+    size_hint: 0.9, 0.9
+
+<Row@BoxLayout>:
+    canvas.before:
+        Color:
+            rgba: .5, 0.5, 0.5, 1
+        Rectangle:
+            size: self.size
+            pos: self.pos
+    value: ''
+    Label:
+        text: root.value
+
+<MainScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+
+        BoxLayout:
+            orientation: 'vertical'
+
+            Accordion:
+                orientation: 'horizontal'
+                id: accordion
+
+                AccordionItem:
+                    collapse:False
+                    title: 'Auto'
+                    id: accordion_auto
+
+                    StackLayout:
+                        orientation: 'lr-tb'
+
+                        FormRow:
+                            Label:
+                                text_size: self.size
+                                halign: 'left'
+                                text: "Spreadsheet ID"
+                            FormRowTextInput:
+                                id: spreadsheet_id
+                                hint_text:"Spreadsheet ID"
+
+                        FormRow:
+                            Label:
+                                text_size: self.size
+                                halign: 'left'
+                                text: "Realisatie Range"
+                            FormRowTextInput:
+                                id: realisatie_range_name
+                                hint_text:"Range"
+
+                        FormRow:
+                            Label:
+                                text_size: self.size
+                                halign: 'left'
+                                text: "Balans Range Activa"
+                            FormRowTextInput:
+                                id: balans_range_name_activa
+                                hint_text:"Range"
+
+                        FormRow:
+                            Label:
+                                text_size: self.size
+                                halign: 'left'
+                                text: "Balans Range passiva"
+                            FormRowTextInput:
+                                id: balans_range_name_passiva
+                                hint_text:"Range"
+
+
+                AccordionItem:
+                    collapse:True
+                    title: 'Manual'
+                    id: accordion_manual
+
+
+                    BoxLayout:
+                        orientation: 'horizontal'
+                        spacing: dp(8)
+                        padding: 5
+                        BoxLayout
+                            orientation: 'vertical'
+                            size_hint_y: 1
+                            spacing: dp(8)
+                            Label:
+                                text: "Paste the accounts here"
+                                text_size: self.size
+                                size_hint_y: None
+                                height: 20
+                            TextInput:
+                                id: gnucash_accounts
+
+                        BoxLayout
+                            orientation: 'vertical'
+                            size_hint_y: 1
+                            spacing: dp(8)
+                            Label:
+                                text: "Copy the accounts, profits and costs from here"
+                                text_size: self.size
+                                size_hint_y: None
+                                height: 20
+                            TextInput:
+                                id: generated_report
+
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: 50
+                spacing: dp(8)
+                padding: 5
+                TextInput:
+                    id: start_date
+                    multiline: False
+                    size_hint_x: 0.6
+                    padding: dp(10), dp(10), 0, 0
+                    hint_text:"Start Date (YYYY-MM-DD)"
+                TextInput:
+                    id: end_date
+                    multiline: False
+                    size_hint_x: 0.6
+                    padding: dp(10), dp(10), 0, 0
+                    hint_text:"End Date (YYYY-MM-DD)"
+
+            BoxLayout:
+                size_hint_y: None
+                height: 50
+                spacing: dp(8)
+                padding: 5
+                TextInput:
+                    id: gnucash_file_path
+                    multiline: False
+                    size_hint_x: 0.6
+                    padding: dp(10), dp(10), 0, 0
+                    hint_text:"GnuCash File"
+                Button:
+                    id: gnucash_file_select_button
+                    size_hint:0.2,1
+                    text: 'Select'
+                    on_release: root.show_set_gnucash_file_path()
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                id: make_report_button
+                text: 'Make Report'
+                on_release: root.make_report()
+
+
+
+<ListItemButton>:
+    selected_color: .88, .88, .88, 1
+    deselected_color : .6, .6, .6, 1
+
+<LoadDialog>:
+    drives_list: drives_list
+    filechooser: filechooser
+
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+
+        BoxLayout:
+            orientation: "horizontal"
+
+            ListView:
+                id: drives_list
+                size_hint: .2, 1
+                adapter:
+                    la.ListAdapter(data=root.get_quick_links(), selection_mode='single', allow_empty_selection=False, cls=lv.ListItemButton)
+
+            BoxLayout:
+                orientation: "vertical"
+                BoxLayout:
+                    size_hint_y: None
+                    height: 40
+                    spacing: dp(8)
+                    TextInput:
+                        id: text_box_path
+                        multiline: False
+                        size_hint_x: 0.6
+                        hint_text: 'new value'
+                        padding: dp(10), dp(10), 0, 0
+                        on_text_validate: root.go_to_directory(text_box_path.text)
+                    Button:
+                        size_hint:0.2,1
+                        text: 'Go'
+                        on_release: root.go_to_directory(text_box_path.text)
+
+                StackLayout:
+                    size_hint_y: None
+                    orientation: 'lr-tb'
+                    height: 40
+
+                    ToggleButton:
+                        size_hint: .2, 1
+                        text: 'List'
+                        state: 'down'
+                        group: 'filechooser'
+                        on_release: filechooser.view_mode = 'list'
+
+                    ToggleButton:
+                        size_hint: .2, 1
+                        text: 'Icon'
+                        group: 'filechooser'
+                        on_release: filechooser.view_mode = 'icon'
+
+                FileChooser:
+                    id: filechooser
+                    filter_dirs: True
+                    filters: [root.show_item]
+                    on_entries_cleared:text_box_path.text = filechooser.path
+
+                    FileChooserListLayout
+                    FileChooserIconLayout
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+            Button:
+                text: "Select File"
+                on_release: root.load(filechooser.path, filechooser.selection)
+
+
+<MessagePopup@Popup>:
+    size_hint: 0.6, 0.3
+
+<WarningPopup>:
+    id: warning_popup
+    size_hint: 0.3, 0.5
+
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        Label:
+            id: warning_popup_text
+            size_hint_y: 1
+            text: "A warning"
+
+        BoxLayout:
+            size_hint_y: None
+            height: 30
+            Button:
+                text: "Cancel"
+                on_release: root.cancel()
+
+<FormRow@BoxLayout>:
+    padding: 10
+    orientation:'vertical'
+    size_hint_x: 1
+    size_hint_y: None
+    height: 80
+
+<FormRowTextInput@TextInput>:
+    size_hint_y: None
+    height: 40
+    padding: dp(10), dp(10), 0, 0
+    multiline: False
+
